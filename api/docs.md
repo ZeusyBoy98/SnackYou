@@ -1,39 +1,27 @@
-# 🍿 SnackYou Turret API Documentation
+# SnackYou Turret API
 
-## Overview
+Controls a networked snack-launching turret: yaw/pitch positioning, a lock-based ownership model, a fire trigger, and a polling interface for an ESP32 controller. State lives in memory on the Go (Gin) backend.
 
-This API controls a networked snack-launching turret with:
+**Base URL:** `http://<server>:8080/api`
 
-* 🎯 Real-time yaw/pitch control
-* 🔒 Lock-based ownership system
-* 🔥 Fire trigger system
-* 🤖 ESP32 polling interface
+## Endpoints
 
-All state is stored in-memory on the Go (Gin) backend.
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/lock` | Acquire or extend the control lock |
+| DELETE | `/api/lock` | Release the control lock |
+| GET | `/api/lock` | Get current lock status |
+| GET | `/api/state` | Get turret state and lock info |
+| PUT | `/api/state` | Update yaw/pitch (requires lock) |
+| POST | `/api/fire` | Trigger fire (requires lock) |
+| GET | `/api/esp/state` | ESP32 polls for current commands |
+| POST | `/api/esp/ack` | ESP32 acknowledges fire execution |
 
-Base URL:
+## Core concepts
 
-```
-http://<server>:8080/api
-```
+**Lock system.** Only one user controls the turret at a time. A lock must be acquired before moving the turret or firing. It expires automatically after 30 seconds unless refreshed.
 
----
-
-# 🧠 Core Concepts
-
-## 1. Lock System
-
-Only one user can control the turret at a time.
-
-* You must acquire a lock before moving the turret.
-* Lock expires automatically after 30 seconds unless refreshed.
-
----
-
-## 2. State System
-
-Turret state is:
-
+**State.**
 ```json
 {
   "yaw": 0-180,
@@ -43,118 +31,66 @@ Turret state is:
 }
 ```
 
----
+**User identity.** Every request that modifies state includes a `user` string, which is checked against the current lock owner.
 
-## 3. User Identity
+## Lock endpoints
 
-Every request that modifies state must include:
+### POST /api/lock
 
+Acquires or extends control of the turret.
+
+Request:
 ```json
-"user": "string"
+{ "user": "ritam" }
 ```
 
-This is used to validate lock ownership.
+Behavior:
+- No existing lock → grants it
+- Requesting user already owns it → extends by 30s
+- A different user owns it → 409 Conflict
 
----
-
-# 📡 API ENDPOINTS
-
----
-
-# 🔐 LOCK SYSTEM
-
-## POST /api/lock
-
-Acquire or extend control of the turret.
-
-### Request Body
-
+Response (success):
 ```json
-{
-  "user": "ritam"
-}
+{ "success": true, "expires": "2026-07-04T02:40:00Z" }
 ```
 
-### Behavior
-
-* If no lock exists → grants lock
-* If same user → extends lock by 30s
-* If different user owns lock → returns 409 Conflict
-
-### Response (success)
-
+Response (conflict):
 ```json
-{
-  "success": true,
-  "expires": "2026-07-04T02:40:00Z"
-}
+{ "success": false, "owner": "other_user" }
 ```
 
-### Response (conflict)
+### DELETE /api/lock
 
+Releases the lock. Only the current owner can release it.
+
+Request (query param or body):
 ```json
-{
-  "success": false,
-  "owner": "other_user"
-}
+{ "user": "ritam" }
 ```
 
----
+Behavior: if the requester owns the lock, it's cleared and ownership/expiry reset.
 
-## DELETE /api/lock
-
-Release lock (only owner can release).
-
-### Query Param OR Body
-
-Preferred:
-
+Response:
 ```json
-{
-  "user": "ritam"
-}
+{ "released": true }
 ```
 
-### Behavior
+### GET /api/lock
 
-* Clears lock if requester is owner
-* Resets ownership and expiry
+Returns current lock ownership.
 
-### Response
-
+Response:
 ```json
-{
-  "released": true
-}
+{ "owner": "ritam", "expires": "2026-07-04T02:40:00Z" }
 ```
 
----
+## Turret state endpoints
 
-## GET /api/lock
+### GET /api/state
 
-Get current lock state.
+Returns full turret state plus lock info.
 
-### Response
-
-```json
-{
-  "owner": "ritam",
-  "expires": "2026-07-04T02:40:00Z"
-}
-```
-
----
-
-# 🎯 TURTLE STATE CONTROL
-
----
-
-## GET /api/state
-
-Returns full turret state + lock info.
-
-### Response
-
+Response:
 ```json
 {
   "turret": {
@@ -170,193 +106,73 @@ Returns full turret state + lock info.
 }
 ```
 
----
+### PUT /api/state
 
-## PUT /api/state
+Updates turret orientation. Caller must own the lock, or the request returns 403 Forbidden.
 
-Update turret orientation.
-
-### Request Body
-
+Request:
 ```json
-{
-  "user": "ritam",
-  "yaw": 120,
-  "pitch": 30
-}
+{ "user": "ritam", "yaw": 120, "pitch": 30 }
 ```
 
-### Rules
-
-* User MUST own lock
-* Otherwise returns 403 Forbidden
-
-### Response
-
+Response:
 ```json
-{
-  "yaw": 120,
-  "pitch": 30,
-  "fire": false,
-  "version": 13
-}
+{ "yaw": 120, "pitch": 30, "fire": false, "version": 13 }
 ```
 
----
+## Fire endpoint
 
-# 🔥 FIRE SYSTEM
+### POST /api/fire
 
----
+Triggers a snack launch. Caller must own the lock. Sets `fire = true`; the ESP resets it after acknowledging.
 
-## POST /api/fire
-
-Triggers snack launch event.
-
-### Request Body
-
+Request:
 ```json
-{
-  "user": "ritam"
-}
+{ "user": "ritam" }
 ```
 
-### Rules
-
-* Must own lock
-* Sets `fire = true`
-* ESP resets fire after ACK
-
-### Response
-
+Response:
 ```json
-{
-  "ok": true,
-  "version": 14
-}
+{ "ok": true, "version": 14 }
 ```
 
----
+## ESP32 endpoints
 
-# 🤖 ESP32 ENDPOINTS
+### GET /api/esp/state
 
----
+Polled by the ESP32 to read the desired state. The ESP compares `version` against its last-seen value to detect changes, then executes movement or firing.
 
-## GET /api/esp/state
-
-Used by ESP32 to poll turret commands.
-
-### Response
-
+Response:
 ```json
-{
-  "yaw": 120,
-  "pitch": 30,
-  "fire": false,
-  "version": 14
-}
+{ "yaw": 120, "pitch": 30, "fire": false, "version": 14 }
 ```
 
-### Purpose
+### POST /api/esp/ack
 
-* ESP reads desired state
-* Executes movement / firing
-* Compares version for updates
+Acknowledges that a fire command executed.
 
----
-
-## POST /api/esp/ack
-
-Acknowledges fire execution.
-
-### Request Body
-
+Request:
 ```json
-{
-  "version": 14
-}
+{ "version": 14 }
 ```
 
-### Behavior
+Behavior: if `version` matches the current state, `fire` resets to `false`.
 
-* If version matches → resets `fire = false`
-
-### Response
-
+Response:
 ```json
-{
-  "ok": true
-}
+{ "ok": true }
 ```
 
----
+## System rules
 
-# ⚠️ SYSTEM BEHAVIOR RULES
+- Only the lock owner can move or fire the turret.
+- `version` increments on every state change or fire, which prevents duplicate execution on the ESP side.
+- `fire` is a transient flag and must be acknowledged by the ESP before it resets.
 
-## Lock enforcement
+## Example session
 
-* Only lock owner can move or fire turret
-
-## Version system
-
-* Increments on every state change or fire
-* Prevents duplicate execution
-
-## Fire handling
-
-* Fire is a transient flag
-* Must be ACKed by ESP
-
----
-
-# 🔄 REQUEST FLOW EXAMPLE
-
-## Typical session
-
-1. User requests lock
-
-```
-POST /api/lock
-```
-
-2. User moves turret
-
-```
-PUT /api/state
-```
-
-3. User fires
-
-```
-POST /api/fire
-```
-
-4. ESP executes and ACKs
-
-```
-POST /api/esp/ack
-```
-
-5. User releases lock
-
-```
-DELETE /api/lock
-```
-
----
-
-# 🧠 SYSTEM SUMMARY
-
-This system behaves like:
-
-> A multiplayer real-time controller for a physical device with ownership-based access control.
-
----
-
-If you want next, I can also generate:
-
-* 📄 README.md version (GitHub ready)
-* 🧩 architecture diagram (for judges)
-* ⚡ ESP32 firmware pseudocode (so your teammate can implement fast)
-* 🎮 UI state machine diagram (super helpful for debugging)
-
-You're at the “this is actually a distributed system” stage now.
+1. `POST /api/lock` — acquire the lock
+2. `PUT /api/state` — move the turret
+3. `POST /api/fire` — fire
+4. `POST /api/esp/ack` — ESP acknowledges execution
+5. `DELETE /api/lock` — release the lock

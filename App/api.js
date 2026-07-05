@@ -54,6 +54,7 @@ async function getState() {
         expires = data.lock.expires;
     } catch (error) {
         console.error("Error:", error.message);
+        responseElement.textContent = `Error: ${error.message}`;
     } finally {
         setTimeout(getState, 200);
     }
@@ -89,6 +90,7 @@ async function lock() {
         console.log(data);
     } catch (error) {
         console.error("Error:", error.message);
+        responseElement.textContent = `Error: ${error.message}`;
     }
 }
 
@@ -100,12 +102,12 @@ async function release() {
     }
 
     try {
-        const response = await fetch(url, {
+        const response = await fetch(url + `?user=${id}`, {
             method: 'DELETE',
-            headers: {
-                contentType: 'application/json'
-            },
-            body: JSON.stringify(request)
+            // headers: {
+            //     contentType: 'application/json'
+            // },
+            // body: JSON.stringify(request)
         });
         if (!response.ok) {
             throw new Error(`Error: ${response.status}`);
@@ -116,6 +118,7 @@ async function release() {
         console.log(data);
     } catch (error) {
         console.error("Error:", error.message);
+        responseElement.textContent = `Error: ${error.message}`;
     }
 }
 
@@ -124,13 +127,13 @@ async function changeState() {
 
     const request = {
         "user" : `${id}`,
-        "yaw" : yawSlider.value,
-        "pitch" : pitchSlider.value
+        "yaw" : parseInt(yawSlider.value),
+        "pitch" : parseInt(pitchSlider.value)
     }
 
     try {
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 contentType: 'application/json'
             },
@@ -139,8 +142,11 @@ async function changeState() {
         if (!response.ok) {
             throw new Error(`Error: ${response.status}`);
         }
+        const data = await response.json();
+        responseElement.textContent = `${JSON.stringify(data)}`;
     } catch (error) {
         console.error("Error:", error.message);
+        responseElement.textContent = `Error: ${error.message}`;
     }
 }
 
@@ -162,8 +168,11 @@ async function fireTurret() {
         if (!response.ok) {
             throw new Error(`Error: ${response.status}`);
         }
+        const data = await response.json();
+        responseElement.textContent = `${JSON.stringify(data)}`;
     } catch (error) {
         console.error("Error:", error.message);
+        responseElement.textContent = `Error: ${error.message}`;
     }
 }
 
@@ -175,6 +184,14 @@ yawSlider.oninput = () => {
 pitchSlider.oninput = () => {
     pitchDisplay.innerHTML = pitchSlider.value;
     changeState();
+}
+
+lockButton.onclick = () => {
+    lock();
+}
+
+releaseButton.onclick = () => {
+    release();
 }
 
 fireButton.onclick = () => {
