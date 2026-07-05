@@ -1,4 +1,4 @@
-const BASEURL = 'http://127.0.0.1:8080/api';
+const BASEURL = 'https://snackapi.zeusyboy.com/api';
 
 const id = localStorage.getItem('id') || crypto.randomUUID();
 localStorage.setItem('id', id);
