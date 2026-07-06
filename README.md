@@ -1,10 +1,10 @@
-# Sn*ck You!
+# Sn\*ck You!
 
 Do you ever feel lazy to get yourself a snack?
 
-Well, worry no more! Sn*ck You! lets you aim + launch a snack at yourself.
+Well, worry no more! Sn\*ck You! lets you aim + launch a snack at yourself.
 
-Or just launch it at your friends. lol.
+Or just launch it at your friends, lol.
 
 **Live app:** [snackyou.zeusyboy.com](https://snackyou.zeusyboy.com/App)
 
@@ -12,11 +12,11 @@ Or just launch it at your friends. lol.
 
 SnackYou has three parts:
 
-| Part | Tech | Role |
-|------|------|------|
-| **App** | Static HTML/CSS/JS (`App/`) | Control panel + live camera feed |
-| **API** | Go + Gin (`api/`) | Turret state, lock ownership, camera relay |
-| **Firmware** | ESP-IDF on XIAO ESP32-S3 Sense (`firmware/`) | Camera capture + WiFi upload |
+| Part         | Tech                                         | Role                                       |
+| ------------ | -------------------------------------------- | ------------------------------------------ |
+| **App**      | Static HTML/CSS/JS (`App/`)                  | Control panel + live camera feed           |
+| **API**      | Go + Gin (`api/`)                            | Turret state, lock ownership, camera relay |
+| **Firmware** | ESP-IDF on XIAO ESP32-S3 Sense (`firmware/`) | Camera capture + WiFi upload               |
 
 The hosted app at `https://snackyou.zeusyboy.com` talks to the API at `https://snackapi.zeusyboy.com`. The ESP32 pushes JPEG frames to the API, and the app reads them back over HTTPS as an MJPEG stream.
 
@@ -94,9 +94,9 @@ Production runs at `https://snackapi.zeusyboy.com`. Deploy however you host that
 
 ### Camera relay endpoints
 
-| Endpoint | Purpose |
-|----------|---------|
-| `POST /api/esp/camera` | ESP32 uploads JPEG frames here |
+| Endpoint                 | Purpose                                       |
+| ------------------------ | --------------------------------------------- |
+| `POST /api/esp/camera`   | ESP32 uploads JPEG frames here                |
 | `GET /api/camera/stream` | Browser MJPEG stream (used by the hosted app) |
 
 ## Firmware
