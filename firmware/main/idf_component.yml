@@ -1,0 +1,8 @@
+dependencies:
+  idf:
+    version: 5.5.4
+  espressif/esp32-camera: ^2.1.7
+  servo-git:
+    git: https://github.com/espressif/esp-iot-solution.git
+    version: master
+    path: components/motor/servo

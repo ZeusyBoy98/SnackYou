@@ -1,0 +1,46 @@
+dependencies:
+  espressif/esp32-camera:
+    component_hash: bc9c8a6b51df777a014fa295825b3de5069bc0300c317acff20c97cf4a10ac7d
+    dependencies:
+    - name: espressif/esp_jpeg
+      registry_url: https://components.espressif.com
+      require: public
+      version: ^1.3.1
+    - name: idf
+      require: private
+      version: '>=5.1'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 2.1.7
+  espressif/esp_jpeg:
+    component_hash: defb83669293cbf86d0fa86b475ba5517aceed04ed70db435388c151ab37b5d7
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 1.3.1
+  idf:
+    source:
+      type: idf
+    version: 5.5.4
+  servo-git:
+    component_hash: c6e39f3880307b3c43605510a038e8e7e41a67c7bc511ee81c2c47f1ee211335
+    dependencies:
+    - name: idf
+      version: '>=4.4'
+    source:
+      git: https://github.com/espressif/esp-iot-solution.git
+      path: components/motor/servo
+      type: git
+    version: 24e1d162eed2c461d9938274444938dc1ab88ee1
+direct_dependencies:
+- espressif/esp32-camera
+- idf
+- servo-git
+manifest_hash: 9f3cd46f3f96f2932ea9dc4977e072f5193e98f46467f6f1bc83d955a67428f7
+target: esp32s3
+version: 2.0.0

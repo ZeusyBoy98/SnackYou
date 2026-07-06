@@ -1,0 +1,49 @@
+menu "SnackYou Configuration"
+
+    config SNACKYOU_WIFI_SSID
+        string "WiFi SSID"
+        default "myssid"
+        help
+            SSID (network name) for the firmware to connect to.
+
+    config SNACKYOU_WIFI_PASSWORD
+        string "WiFi Password"
+        default "mypassword"
+        help
+            WiFi password (WPA or WPA2) for the firmware to use.
+
+    config SNACKYOU_WIFI_MAXIMUM_RETRY
+        int "Maximum WiFi connect retries"
+        default 10
+        help
+            Number of reconnection attempts before giving up and rebooting.
+
+    config SNACKYOU_STREAM_PORT
+        int "Camera stream HTTP port"
+        default 80
+        help
+            TCP port the MJPEG camera stream server listens on.
+
+    config SNACKYOU_CAMERA_UPLOAD_ENABLED
+        bool "Upload camera frames to SnackYou API"
+        default y
+        help
+            Push JPEG frames to the hosted API so the HTTPS web app can display
+            the camera feed without mixed-content browser blocking.
+
+    config SNACKYOU_CAMERA_UPLOAD_URL
+        string "Camera frame upload URL"
+        default "https://snackapi.zeusyboy.com/api/esp/camera"
+        depends on SNACKYOU_CAMERA_UPLOAD_ENABLED
+        help
+            API endpoint that receives image/jpeg frames from the ESP32.
+
+    config SNACKYOU_CAMERA_UPLOAD_INTERVAL_MS
+        int "Camera upload interval (ms)"
+        default 150
+        depends on SNACKYOU_CAMERA_UPLOAD_ENABLED
+        help
+            Delay between uploaded frames. 150 ms is about 6-7 FPS before
+            network and API overhead.
+
+endmenu
