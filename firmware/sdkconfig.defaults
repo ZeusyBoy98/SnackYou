@@ -1,0 +1,28 @@
+CONFIG_IDF_TARGET="esp32s3"
+CONFIG_ESP_CONSOLE_USB_CDC=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+
+# CPU at 240 MHz and flash at 80 MHz, as recommended by esp32-camera
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+
+# The XIAO ESP32-S3 Sense has 8 MB of flash
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+
+# HTTPS camera upload exceeds the default 1 MB app slot.
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+# PSRAM (8 MB octal on the XIAO ESP32-S3 Sense); the camera driver requires
+# PSRAM for anything above CIF JPEG. Keep booting if a board lacks PSRAM so
+# the firmware's runtime fallback can take over.
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_SPIRAM_IGNORE_NOTFOUND=y
+
+# HTTPS uploads to snackapi.zeusyboy.com
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y
+
+# FREERTOS
+CONFIG_FREERTOS_HZ=1000

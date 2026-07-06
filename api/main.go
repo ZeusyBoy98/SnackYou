@@ -33,6 +33,10 @@ func main() {
 		esp:
 		GET    /api/esp/state   poll turret
 		POST   /api/esp/ack     confirm fire
+		POST   /api/esp/camera  upload latest camera frame
+
+		camera:
+		GET    /api/camera/stream  browser MJPEG stream relay
 	*/
 
 	r.GET("/api/state", endpoints.GetState)
@@ -46,10 +50,13 @@ func main() {
 
 	r.GET("/api/esp/state", esp_endpoints.GetESPState)
 	r.POST("/api/esp/ack", esp_endpoints.PostAck)
+	r.POST("/api/esp/camera", esp_endpoints.PostCameraFrame)
+
+	r.GET("/api/camera/stream", endpoints.GetCameraStream)
 
 	r.OPTIONS("/*path", func(c *gin.Context) {
 		c.AbortWithStatus(204)
 	})
 
-	r.Run()
+	r.Run("0.0.0.0:8080")
 }

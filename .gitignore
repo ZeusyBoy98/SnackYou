@@ -1,2 +1,13 @@
 tmp/
 bin/
+.cache/
+ref-repos/
+
+# ESP-IDF
+build/
+managed_components/
+sdkconfig
+sdkconfig.old
+
+# Nix
+.direnv/

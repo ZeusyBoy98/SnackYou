@@ -14,8 +14,10 @@ Controls a networked snack-launching turret: yaw/pitch positioning, a lock-based
 | GET | `/api/state` | Get turret state and lock info |
 | PUT | `/api/state` | Update yaw/pitch (requires lock) |
 | POST | `/api/fire` | Trigger fire (requires lock) |
+| GET | `/api/camera/stream` | Browser MJPEG camera stream relay |
 | GET | `/api/esp/state` | ESP32 polls for current commands |
 | POST | `/api/esp/ack` | ESP32 acknowledges fire execution |
+| POST | `/api/esp/camera` | ESP32 uploads latest JPEG camera frame |
 
 ## Core concepts
 
@@ -137,6 +139,34 @@ Response:
 ```
 
 ## ESP32 endpoints
+
+### POST /api/esp/camera
+
+Uploads one JPEG camera frame from the ESP32 which the hosted web app reads through `/api/camera/stream`
+
+Request:
+```http
+Content-Type: image/jpeg
+
+<jpeg bytes>
+```
+
+Response:
+```json
+{ "ok": true, "seq": 42 }
+```
+
+## Camera endpoints
+
+### GET /api/camera/stream
+
+Streams the most recently uploaded ESP32 JPEG frames as an MJPEG response:
+
+```http
+Content-Type: multipart/x-mixed-replace;boundary=123456789000000000000987654321
+```
+
+This endpoint is intended for the browser app's `<img>` tag.
 
 ### GET /api/esp/state
 
